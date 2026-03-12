@@ -25,12 +25,22 @@ export interface Recipe {
   packagingCost: number;
   markupPercentage: number;
 }
+export interface Transaction {
+  id: string;
+  recipeId: string;
+  recipeName: string;
+  quantitySold: number;
+  totalPrice: number;
+  timestamp: number;
+}
 export interface DashboardSummary {
   totalCount: number;
   totalValue: number;
   lowStockCount: number;
   lowStock: Ingredient[];
-  avgHPP: number; // Estimated business HPP including overhead
+  avgHPP: number;
+  totalRevenue: number;
+  recentSales: Transaction[];
 }
 export interface User {
   id: string;

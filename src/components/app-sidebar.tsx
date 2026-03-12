@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutDashboard, Package, Calculator, Settings, Cookie } from "lucide-react";
+import { LayoutDashboard, Package, Calculator, Settings, Cookie, Receipt } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -16,6 +16,7 @@ const items = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/" },
   { title: "Inventory", icon: Package, url: "/inventory" },
   { title: "HPP Calculator", icon: Calculator, url: "/calculator" },
+  { title: "Transactions", icon: Receipt, url: "/transactions" },
 ];
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
@@ -42,8 +43,8 @@ export function AppSidebar(): JSX.Element {
                   isActive={location.pathname === item.url}
                   className={cn(
                     "transition-all duration-200 hover:bg-[#F4A261]/10",
-                    location.pathname === item.url 
-                      ? "bg-[#F4A261] text-white hover:bg-[#F4A261] shadow-sm" 
+                    location.pathname === item.url
+                      ? "bg-[#F4A261] text-white hover:bg-[#F4A261] shadow-sm"
                       : "text-[#4A2B11]/70 hover:text-[#4A2B11]"
                   )}
                 >

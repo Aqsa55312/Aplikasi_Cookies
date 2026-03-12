@@ -1,5 +1,5 @@
 import { IndexedEntity } from "./core-utils";
-import type { Ingredient, User, Chat, ChatMessage, Recipe } from "@shared/types";
+import type { Ingredient, User, Chat, ChatMessage, Recipe, Transaction } from "@shared/types";
 import { MOCK_INGREDIENTS, MOCK_CHATS, MOCK_USERS, MOCK_CHAT_MESSAGES } from "@shared/mock-data";
 export class IngredientEntity extends IndexedEntity<Ingredient> {
   static readonly entityName = "ingredient";
@@ -31,15 +31,37 @@ export class RecipeEntity extends IndexedEntity<Recipe> {
       id: "r1",
       name: "Dubai Pistachio Kunafa Cookie",
       ingredients: [
-        { ingredientId: "i1", quantity: 50 }, // 50g Pistachio
-        { ingredientId: "i2", quantity: 30 }, // 30g Butter
-        { ingredientId: "i4", quantity: 100 }, // 100g Flour
-        { ingredientId: "i5", quantity: 40 }, // 40g Kunafa
+        { ingredientId: "i1", quantity: 50 },
+        { ingredientId: "i2", quantity: 30 },
+        { ingredientId: "i4", quantity: 100 },
+        { ingredientId: "i5", quantity: 40 },
       ],
       yieldCount: 10,
       laborCost: 50000,
       packagingCost: 15000,
       markupPercentage: 50
+    }
+  ];
+}
+export class TransactionEntity extends IndexedEntity<Transaction> {
+  static readonly entityName = "transaction";
+  static readonly indexName = "transactions";
+  static readonly initialState: Transaction = {
+    id: "",
+    recipeId: "",
+    recipeName: "",
+    quantitySold: 0,
+    totalPrice: 0,
+    timestamp: Date.now()
+  };
+  static seedData: Transaction[] = [
+    {
+      id: "t1",
+      recipeId: "r1",
+      recipeName: "Dubai Pistachio Kunafa Cookie",
+      quantitySold: 20,
+      totalPrice: 450000,
+      timestamp: Date.now() - 86400000
     }
   ];
 }
