@@ -77,11 +77,7 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [
-    "bun add @tanstack/react-table@^8.20.5",
-    "bun add xlsx@^0.18.5",
-    "bun add recharts@2.15.4"
-];
+    const commands = [];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
