@@ -1,18 +1,47 @@
 import { IndexedEntity } from "./core-utils";
-import type { Ingredient, User, Chat, ChatMessage } from "@shared/types";
+import type { Ingredient, User, Chat, ChatMessage, Recipe } from "@shared/types";
 import { MOCK_INGREDIENTS, MOCK_CHATS, MOCK_USERS, MOCK_CHAT_MESSAGES } from "@shared/mock-data";
 export class IngredientEntity extends IndexedEntity<Ingredient> {
   static readonly entityName = "ingredient";
   static readonly indexName = "ingredients";
-  static readonly initialState: Ingredient = { 
-    id: "", 
-    name: "", 
-    pricePerUnit: 0, 
-    stockQuantity: 0, 
-    minimumStock: 0, 
-    unit: "g" 
+  static readonly initialState: Ingredient = {
+    id: "",
+    name: "",
+    pricePerUnit: 0,
+    stockQuantity: 0,
+    minimumStock: 0,
+    unit: "g"
   };
   static seedData = MOCK_INGREDIENTS;
+}
+export class RecipeEntity extends IndexedEntity<Recipe> {
+  static readonly entityName = "recipe";
+  static readonly indexName = "recipes";
+  static readonly initialState: Recipe = {
+    id: "",
+    name: "",
+    ingredients: [],
+    yieldCount: 1,
+    laborCost: 0,
+    packagingCost: 0,
+    markupPercentage: 30
+  };
+  static seedData: Recipe[] = [
+    {
+      id: "r1",
+      name: "Dubai Pistachio Kunafa Cookie",
+      ingredients: [
+        { ingredientId: "i1", quantity: 50 }, // 50g Pistachio
+        { ingredientId: "i2", quantity: 30 }, // 30g Butter
+        { ingredientId: "i4", quantity: 100 }, // 100g Flour
+        { ingredientId: "i5", quantity: 40 }, // 40g Kunafa
+      ],
+      yieldCount: 10,
+      laborCost: 50000,
+      packagingCost: 15000,
+      markupPercentage: 50
+    }
+  ];
 }
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
