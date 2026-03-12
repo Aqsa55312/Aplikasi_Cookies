@@ -1,138 +1,202 @@
-// Home page of the app.
-// Currently a demo placeholder "please wait" screen.
-// Replace this file with your actual app UI. Do not delete it to use some other file as homepage. Simply replace the entire contents of this file.
-
-import { useEffect, useMemo, useState } from 'react'
-import { Sparkles } from 'lucide-react'
-
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { HAS_TEMPLATE_DEMO, TemplateDemo } from '@/components/TemplateDemo'
-import { Button } from '@/components/ui/button'
-import { Toaster, toast } from '@/components/ui/sonner'
-
-function formatDuration(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { api } from '@/lib/api-client';
+import type { Ingredient, ApiResponse } from '@shared/types';
+import { 
+  Package, 
+  AlertTriangle, 
+  TrendingUp, 
+  ArrowRight,
+  Calculator,
+  Plus
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { Skeleton } from '@/components/ui/skeleton';
 export function HomePage() {
-  const [coins, setCoins] = useState(0)
-  const [isRunning, setIsRunning] = useState(false)
-  const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [elapsedMs, setElapsedMs] = useState(0)
-
-  useEffect(() => {
-    if (!isRunning || startedAt === null) return
-
-    const t = setInterval(() => {
-      setElapsedMs(Date.now() - startedAt)
-    }, 250)
-
-    return () => clearInterval(t)
-  }, [isRunning, startedAt])
-
-  const formatted = useMemo(() => formatDuration(elapsedMs), [elapsedMs])
-
-  const onPleaseWait = () => {
-    setCoins((c) => c + 1)
-
-    if (!isRunning) {
-      // Resume from the current elapsed time
-      setStartedAt(Date.now() - elapsedMs)
-      setIsRunning(true)
-      toast.success('Building your app…', {
-        description: "Hang tight — we're setting everything up.",
-      })
-      return
-    }
-
-    setIsRunning(false)
-    toast.info('Still working…', {
-      description: 'You can come back in a moment.',
-    })
-  }
-
-  const onReset = () => {
-    setCoins(0)
-    setIsRunning(false)
-    setStartedAt(null)
-    setElapsedMs(0)
-    toast('Reset complete')
-  }
-
-  const onAddCoin = () => {
-    setCoins((c) => c + 1)
-    toast('Coin added')
-  }
-
+  const { data: ingredientsPage, isLoading } = useQuery({
+    queryKey: ['ingredients'],
+    queryFn: () => api<{ items: Ingredient[] }>('/api/ingredients')
+  });
+  const ingredients = ingredientsPage?.items ?? [];
+  const stats = useMemo(() => {
+    const totalItems = ingredients.length;
+    const totalValue = ingredients.reduce((sum, item) => sum + (item.pricePerUnit * (item.stockQuantity / (item.unit === 'unit' ? 1 : 1000))), 0);
+    const lowStockCount = ingredients.filter(item => item.stockQuantity <= item.minimumStock).length;
+    return {
+      totalItems,
+      totalValue,
+      lowStockCount
+    };
+  }, [ingredients]);
+  const lowStockItems = useMemo(() => {
+    return ingredients
+      .filter(item => item.stockQuantity <= item.minimumStock)
+      .slice(0, 5);
+  }, [ingredients]);
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-      <ThemeToggle />
-      <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20 pointer-events-none" />
-
-      <div className="text-center space-y-8 relative z-10 animate-fade-in w-full">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary floating">
-            <Sparkles className="w-8 h-8 text-white rotating" />
+    <AppLayout container className="bg-[#FDF8F5]">
+      <div className="space-y-8 animate-fade-in">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight text-[#4A2B11]">Bakery Overview</h1>
+            <p className="text-[#4A2B11]/60">Welcome back. Here's what's happening in your kitchen today.</p>
+          </div>
+          <div className="flex gap-3">
+            <Button asChild variant="outline" className="border-[#4A2B11]/10 bg-white text-[#4A2B11]">
+              <Link to="/calculator">
+                <Calculator className="mr-2 h-4 w-4" />
+                HPP Calc
+              </Link>
+            </Button>
+            <Button asChild className="bg-[#F4A261] hover:bg-[#E55A1B] text-white shadow-md transition-transform active:scale-95">
+              <Link to="/inventory">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Stock
+              </Link>
+            </Button>
           </div>
         </div>
-
-        <div className="space-y-3">
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight">
-            Creating your <span className="text-gradient">app</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-pretty">
-            Your application would be ready soon.
-          </p>
+        {/* Stats Grid */}
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="border-none bg-white shadow-soft">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-[#4A2B11]/50">Total Inventory Value</CardTitle>
+              <TrendingUp className="h-4 w-4 text-[#F4A261]" />
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                <div className="text-2xl font-bold text-[#4A2B11]">
+                  Rp {stats.totalValue.toLocaleString('id-ID')}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          <Card className="border-none bg-white shadow-soft">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-[#4A2B11]/50">Unique Ingredients</CardTitle>
+              <Package className="h-4 w-4 text-[#4A2B11]" />
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <Skeleton className="h-8 w-12" />
+              ) : (
+                <div className="text-2xl font-bold text-[#4A2B11]">{stats.totalItems}</div>
+              )}
+            </CardContent>
+          </Card>
+          <Card className={cn(
+            "border-none shadow-soft transition-colors",
+            stats.lowStockCount > 0 ? "bg-[#F4A261]/10" : "bg-white"
+          )}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-[#4A2B11]/50">Low Stock Alerts</CardTitle>
+              <AlertTriangle className={cn("h-4 w-4", stats.lowStockCount > 0 ? "text-[#E55A1B]" : "text-[#4A2B11]/20")} />
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <Skeleton className="h-8 w-12" />
+              ) : (
+                <div className={cn("text-2xl font-bold", stats.lowStockCount > 0 ? "text-[#E55A1B]" : "text-[#4A2B11]")}>
+                  {stats.lowStockCount}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
-
-        {HAS_TEMPLATE_DEMO ? (
-          <div className="max-w-5xl mx-auto text-left">
-            <TemplateDemo />
+        {/* Main Sections Grid */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Low Stock Detailed List */}
+          <Card className="border-none bg-white shadow-soft overflow-hidden">
+            <CardHeader className="border-b border-[#4A2B11]/5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg text-[#4A2B11]">Urgent Restock</CardTitle>
+                  <CardDescription>Items falling below minimum threshold</CardDescription>
+                </div>
+                <Button variant="ghost" size="sm" asChild className="text-[#F4A261] hover:text-[#E55A1B] hover:bg-transparent px-0">
+                  <Link to="/inventory">
+                    View All <ArrowRight className="ml-1 h-3 w-3" />
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {isLoading ? (
+                <div className="p-6 space-y-4">
+                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+                </div>
+              ) : lowStockItems.length > 0 ? (
+                <div className="divide-y divide-[#4A2B11]/5">
+                  {lowStockItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-4 hover:bg-[#FDF8F5]/50 transition-colors">
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-[#4A2B11]">{item.name}</p>
+                        <p className="text-xs text-[#4A2B11]/50">
+                          Stock: {item.stockQuantity}{item.unit} / Min: {item.minimumStock}{item.unit}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="inline-flex items-center rounded-full bg-[#E55A1B]/10 px-2 py-1 text-[10px] font-bold text-[#E55A1B] uppercase tracking-wider">
+                          Critical
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center">
+                  <Package className="h-10 w-10 text-[#4A2B11]/10 mx-auto mb-3" />
+                  <p className="text-sm text-[#4A2B11]/40">All stock levels are healthy.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          {/* Quick Actions / Tips */}
+          <div className="space-y-6">
+            <Card className="border-none bg-[#4A2B11] text-white shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Calculator className="h-24 w-24 rotate-12" />
+              </div>
+              <CardHeader>
+                <CardTitle className="text-white">Recipe Profitability</CardTitle>
+                <CardDescription className="text-white/60">Calculate exact margins for your cookie batches instantly.</CardDescription>
+              </CardHeader>
+              <CardContent className="relative z-10">
+                <Button asChild className="w-full bg-[#F4A261] hover:bg-[#F4A261]/90 text-white border-none">
+                  <Link to="/calculator">Open HPP Calculator</Link>
+                </Button>
+              </CardContent>
+            </Card>
+            <Card className="border-none bg-white shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-lg text-[#4A2B11]">Recent Insights</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex gap-4 p-3 rounded-lg bg-[#FDF8F5] border border-[#4A2B11]/5">
+                    <div className="h-10 w-10 rounded-full bg-[#F4A261]/20 flex items-center justify-center shrink-0">
+                      <TrendingUp className="h-5 w-5 text-[#F4A261]" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-[#4A2B11]">Price Optimization</p>
+                      <p className="text-xs text-[#4A2B11]/60">Ingredients cost has increased by 4% this month. Review your HPP.</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        ) : (
-          <>
-            <div className="flex justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={onPleaseWait}
-                className="btn-gradient px-8 py-4 text-lg font-semibold hover:-translate-y-0.5 transition-all duration-200"
-                aria-live="polite"
-              >
-                Please Wait
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div>
-                Time elapsed:{' '}
-                <span className="font-medium tabular-nums text-foreground">{formatted}</span>
-              </div>
-              <div>
-                Coins:{' '}
-                <span className="font-medium tabular-nums text-foreground">{coins}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={onReset}>
-                Reset
-              </Button>
-              <Button variant="outline" size="sm" onClick={onAddCoin}>
-                Add Coin
-              </Button>
-            </div>
-          </>
-        )}
+        </div>
       </div>
-
-      <footer className="absolute bottom-8 text-center text-muted-foreground/80">
-        <p>Powered by Cloudflare</p>
-      </footer>
-
-      <Toaster richColors closeButton />
-    </div>
-  )
+    </AppLayout>
+  );
+}
+function cn(...classes: string[]) {
+  return classes.filter(Boolean).join(' ');
 }
