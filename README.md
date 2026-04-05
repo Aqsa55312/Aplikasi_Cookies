@@ -1,6 +1,6 @@
 # Cloudflare Workers Full-Stack Template
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aqsa55312/Aplikasi_Cookies)
 
 A production-ready full-stack application template built on Cloudflare Workers, featuring a React frontend with shadcn/ui and a powerful backend using Durable Objects for stateful entities like Users and Chats. This template demonstrates real-time data persistence, indexed listing, and CRUD operations in a type-safe TypeScript environment.
 
@@ -128,7 +128,7 @@ All responses follow `{ success: boolean; data?: T; error?: string }`.
 
 3. Your app will be live at `https://<worker>.<subdomain>.workers.dev`.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Aqsa55312/Aplikasi_Cookies)
 
 ## Project Structure
 
